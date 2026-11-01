@@ -9,11 +9,14 @@ export interface Word {
   spoken: string;
   intro: string;
   end: string;
+  /** Figura (só nas palavras que não são nomes). */
+  emoji?: string;
 }
 
-function word(id: string, text: string, spoken: string, kind: 'nome' | 'palavra', end?: string): Word {
+function word(id: string, text: string, spoken: string, kind: 'nome' | 'palavra', end?: string, emoji?: string): Word {
   return {
     id,
+    emoji,
     text,
     letters: [...text.normalize('NFC')],
     spoken,
@@ -38,11 +41,27 @@ const FAMILY: [string, string][] = [
   ['SNOW', 'Snou'],
 ];
 
+/** Palavras com figura. */
+const THINGS: [string, string][] = [
+  ['PATO', '🦆'],
+  ['COELHO', '🐰'],
+  ['ESCOLA', '🏫'],
+  ['PROFESSORA', '👩‍🏫'],
+  ['CACHORRO', '🐶'],
+  ['PEIXE', '🐟'],
+  ['IOGURTE', '🥣'],
+  ['BATATINHA', '🥔'],
+];
+
+/** O painel da corrida cabe palavras de até 10 letras. */
+export const MAX_LETTERS = 10;
+
 export const WORDS: readonly Word[] = [
   word('gustavo', 'GUSTAVO', 'Gustavo', 'nome', 'Parabéns, campeão Gustavo! Você montou seu nome!'),
   word('mamae', 'MAMÃE', 'mamãe', 'palavra', 'Parabéns, campeão! Você montou mamãe!'),
   word('papai', 'PAPAI', 'papai', 'palavra', 'Parabéns, campeão! Você montou papai!'),
   ...FAMILY.map(([text, spoken]) => word(text.toLowerCase(), text, spoken, 'nome')),
+  ...THINGS.map(([text, emoji]) => word(text.toLowerCase(), text, text.toLowerCase(), 'palavra', undefined, emoji)),
 ];
 
 /** Nome da letra para a voz (a voz lê melhor "gê" do que "G"). */

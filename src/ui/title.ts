@@ -11,7 +11,7 @@ import { ICONS, iconButton } from './icons.ts';
 
 export class TitleScreen {
   readonly el = makeScreen('title-screen');
-  private readonly cards = h('div', 'words');
+  private readonly cards = h('div', 'words scroll');
   private readonly car = h('div', 'car-side title-car');
   private readonly soundBtn: HTMLButtonElement;
   private readonly musicBtn: HTMLButtonElement;
@@ -80,6 +80,7 @@ export class TitleScreen {
       const w = WORDS[i];
       const n = store.trophies(w.id);
       card.innerHTML =
+        (w.emoji ? `<i class="pic">${w.emoji}</i>` : '') +
         `<span class="tiles">${w.letters.map((l) => `<b style="--c:${letterColor(l)}">${l}</b>`).join('')}</span>` +
         (n > 0 ? `<span class="cup">${TROPHY_SVG}${n > 1 ? `<em>${n}</em>` : ''}</span>` : '');
     });

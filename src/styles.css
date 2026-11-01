@@ -217,13 +217,22 @@ body {
   }
 }
 
-/* 14 palavras em 2 colunas, todas na tela (sem rolar). */
+/* Palavras em linhas (cada cartão do tamanho da palavra). Se não couber, a lista rola. */
 .words {
-  --t: min(5.2vmin, 3.5vw);
-  display: grid;
-  grid-template-columns: repeat(2, auto);
-  gap: calc(var(--t) * 0.3) calc(var(--t) * 0.5);
-  align-content: center;
+  --t: min(4.3vmin, 3vw);
+  flex: 1 1 0;
+  align-self: stretch;
+  min-height: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: safe center;
+  gap: calc(var(--t) * 0.42) calc(var(--t) * 0.45);
+  padding: calc(var(--t) * 2.2) calc(var(--t) * 0.5) calc(var(--t) * 0.6);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .word-card {
@@ -248,6 +257,14 @@ body {
 .word-card .tiles {
   display: flex;
   gap: calc(var(--t) * 0.1);
+}
+
+.word-card .pic {
+  font-style: normal;
+  font-size: calc(var(--t) * 0.95);
+  line-height: 1;
+  align-self: center;
+  margin-right: calc(var(--t) * 0.2);
 }
 
 .word-card b {
@@ -391,7 +408,8 @@ body {
 }
 
 .slot {
-  --s: clamp(46px, min(9vmin, 10vw), 84px);
+  /* Cabe a palavra inteira (até 10 letras), a figura e o botão de início. */
+  --s: clamp(28px, min(9vmin, calc((100vw - 330px) / var(--n, 7) - 10px)), 84px);
   width: var(--s);
   height: calc(var(--s) * 1.12);
   border-radius: calc(var(--s) * 0.22);
@@ -403,6 +421,14 @@ body {
   font-size: calc(var(--s) * 0.7);
   color: rgba(255, 255, 255, 0.25);
   transition: background 0.2s ease;
+}
+
+.panel .pic {
+  font-style: normal;
+  align-self: center;
+  font-size: clamp(30px, 7vmin, 64px);
+  line-height: 1;
+  margin: 0 0.1em;
 }
 
 .slot.now {
@@ -770,16 +796,28 @@ body {
   gap: 1vmin;
 }
 
+.trophy .top {
+  display: flex;
+  align-items: center;
+  gap: 4vmin;
+}
+
+.trophy .top .pic {
+  font-size: clamp(80px, 18vmin, 160px);
+  line-height: 1;
+  animation: cup 1.2s ease-in-out infinite alternate-reverse;
+}
+
 .trophy .word span {
   display: grid;
   place-items: center;
-  width: clamp(44px, 8.5vmin, 80px);
-  height: clamp(50px, 9.5vmin, 90px);
+  width: min(8.5vmin, calc(72vw / var(--n, 7) - 1vmin));
+  height: calc(min(8.5vmin, calc(72vw / var(--n, 7) - 1vmin)) * 1.12);
   border-radius: 1.8vmin;
   background: linear-gradient(180deg, #ffd54f, #ffa000);
   color: #fff;
   font-weight: 900;
-  font-size: clamp(30px, 6.4vmin, 60px);
+  font-size: calc(min(8.5vmin, calc(72vw / var(--n, 7) - 1vmin)) * 0.75);
   text-shadow: 0 3px 0 #e65100;
   box-shadow: inset 0 -0.6vmin 0 rgba(0, 0, 0, 0.15);
 }
@@ -1161,7 +1199,9 @@ body {
   }
 
   .words {
-    --t: min(5.4vmin, 5.2vw, 4vh);
+    --t: min(5vmin, 4.6vw, 3.6vh);
+    align-self: stretch;
+    padding-top: calc(var(--t) * 0.4);
   }
 
   .pit .car-side {
@@ -1191,10 +1231,11 @@ body {
   }
 
   .slot {
-    --s: clamp(40px, 11vw, 84px);
+    --s: clamp(28px, min(11vw, calc((100vw - 170px) / var(--n, 7) - 10px)), 84px);
   }
 
+  /* Em pé, o painel fica embaixo do botão de início. */
   .panel {
-    top: calc(var(--pad-t) + 72px);
+    top: calc(var(--pad-t) + clamp(56px, 9vmin, 76px) + 12px);
   }
 }

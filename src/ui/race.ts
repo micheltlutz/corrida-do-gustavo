@@ -175,7 +175,9 @@ export class RaceScreen {
 
   private buildPanel(): void {
     this.panel.textContent = '';
-    this.panel.classList.remove('gold');
+    this.panel.classList.remove('gold', 'shine');
+    this.panel.style.setProperty('--n', String(this.word.letters.length));
+    if (this.word.emoji) this.panel.append(h('i', 'pic', this.word.emoji));
     this.slots = this.word.letters.map((l) => {
       const s = h('div', 'slot', `<span>${l}</span>`);
       s.style.setProperty('--c', letterColor(l));
@@ -448,6 +450,7 @@ export class RaceScreen {
     t.textContent = '';
     const card = h('div', 'card');
     const word = h('div', 'word', this.word.letters.map((l) => `<span>${l}</span>`).join(''));
+    word.style.setProperty('--n', String(this.word.letters.length));
     const buttons = h('div', 'buttons');
     buttons.append(
       onTap(iconButton('home', 'Início', 'small'), () => this.nav.title()),
@@ -455,7 +458,10 @@ export class RaceScreen {
     );
     const next = (this.wordIndex + 1) % WORDS.length;
     buttons.append(onTap(iconButton('next', 'Próxima palavra', 'big go'), () => this.nav.play(next)));
-    card.append(h('div', 'cup', TROPHY_SVG), word, buttons);
+    const top = h('div', 'top');
+    top.append(h('div', 'cup', TROPHY_SVG));
+    if (this.word.emoji) top.append(h('div', 'pic', this.word.emoji));
+    card.append(top, word, buttons);
     t.append(card);
     t.hidden = false;
     confetti(this.el, 80);

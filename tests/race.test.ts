@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GATE_AHEAD, Race, type RaceEvent } from '../src/game/race.ts';
-import { distractors, letterName, letterRef, rng, similar, WORDS } from '../src/game/words.ts';
+import { distractors, letterName, letterRef, MAX_LETTERS, rng, similar, WORDS } from '../src/game/words.ts';
 
 const DT = 1 / 60;
 
@@ -212,12 +212,16 @@ describe('voz', () => {
     expect(WORDS.find((w) => w.id === 'rosane')!.end).toBe('Parabéns, campeão! Você montou o nome Rosane!');
   });
 
-  it('são 14 palavras, sem repetir, e GUSTAVO é a primeira', () => {
+  it('são 22 palavras, sem repetir, e GUSTAVO é a primeira', () => {
     expect(WORDS.map((w) => w.text)).toEqual([
       'GUSTAVO', 'MAMÃE', 'PAPAI', 'ERON', 'ROSANE', 'SANDRA', 'LARRY', 'ROSINHA', 'SUELI', 'NELSON', 'KAREN', 'MICHEL', 'SIMBA', 'SNOW',
+      'PATO', 'COELHO', 'ESCOLA', 'PROFESSORA', 'CACHORRO', 'PEIXE', 'IOGURTE', 'BATATINHA',
     ]);
     expect(new Set(WORDS.map((w) => w.id)).size).toBe(WORDS.length);
-    // Todas cabem no painel (no máximo 7 letras).
-    for (const w of WORDS) expect(w.letters.length).toBeLessThanOrEqual(7);
+    // Todas cabem no painel.
+    for (const w of WORDS) expect(w.letters.length).toBeLessThanOrEqual(MAX_LETTERS);
+    // As palavras (não os nomes) têm figura.
+    expect(WORDS.find((w) => w.id === 'pato')!.emoji).toBe('🦆');
+    expect(WORDS.find((w) => w.id === 'pato')!.intro).toBe('Vamos montar a palavra pato!');
   });
 });
