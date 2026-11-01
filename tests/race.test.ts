@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GATE_AHEAD, Race, type RaceEvent } from '../src/game/race.ts';
+import { GATE_AHEAD, HIT_RANGE, laneX, Race, SPEED, type RaceEvent } from '../src/game/race.ts';
 import { distractors, letterName, letterRef, MAX_LETTERS, rng, similar, WORDS } from '../src/game/words.ts';
 
 const DT = 1 / 60;
@@ -171,6 +171,118 @@ describe('corrida', () => {
     race.leavePit();
     expect(race.muddy).toBe(false);
     expect(race.phase).toBe('drive');
+  });
+});
+
+/** Desvia dos obstáculos que vêm na faixa dele (vendo de longe) e depois vai para a letra certa. */
+const dodger: Driver = {
+  tick(race) {
+    const ahead = race.obstacles.filter((o) => !o.hit && o.z > race.dist && o.z - race.dist < 30);
+    const nextRow = Math.min(...ahead.map((o) => o.z));
+    const blocked = new Set(ahead.filter((o) => o.z === nextRow).map((o) => o.lane));
+    if (blocked.has(race.lane)) {
+      const free = [0, 1, 2].filter((l) => !blocked.has(l)).sort((a, b) => Math.abs(a - race.lane) - Math.abs(b - race.lane));
+      race.steer(free[0] > race.lane ? 1 : -1);
+      return;
+    }
+    const g = race.gates.find((x) => x.state === 'open');
+    if (!g || race.lane === g.correct || ahead.length) return;
+    race.steer(g.correct > race.lane ? 1 : -1);
+  },
+};
+
+describe('obstáculos', () => {
+  it('a primeira letra vem sem obstáculos; depois sempre sobra uma faixa livre', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      for (const word of WORDS) {
+        const race = new Race(word, seed);
+        const events = run(race, perfect);
+        expect(race.phase).toBe('done');
+        let got = 0;
+        const rows = new Map<number, number[]>();
+        for (const e of events) {
+          if (e.t === 'collect') got++;
+          if (e.t !== 'obstacle') continue;
+          expect(got).toBeGreaterThanOrEqual(1);
+          const list = rows.get(e.obstacle.z) ?? [];
+          list.push(e.obstacle.lane);
+          rows.set(e.obstacle.z, list);
+        }
+        for (const lanes of rows.values()) {
+          expect(lanes.length).toBeLessThanOrEqual(2);
+          expect(new Set(lanes).size).toBe(lanes.length);
+        }
+      }
+    }
+  });
+
+  it('dá para desviar de todos e ainda montar a palavra sem erro', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const race = new Race(WORDS[0], seed);
+      run(race, dodger);
+      expect(race.phase).toBe('done');
+      expect(race.bumps).toBe(0);
+      expect(race.misses).toBe(0);
+    }
+  });
+
+  it('os obstáculos ficam longe das estrelas e dos portões', () => {
+    const race = new Race(WORDS[0], 4);
+    run(race, {
+      onGate(r, ev) {
+        if (ev.gate.attempt > 0) return;
+        for (const o of r.obstacles.filter((x) => x.z > r.dist)) {
+          expect(ev.gate.z - o.z).toBeGreaterThanOrEqual(25);
+          for (const st of r.stars.filter((x) => !x.taken)) expect(Math.abs(st.z - o.z)).toBeGreaterThanOrEqual(8);
+        }
+      },
+    });
+    expect(race.phase).toBe('done');
+  });
+
+  it('bater faz balançar e frear um pouco, mas não atrapalha a palavra', () => {
+    const race = new Race(WORDS[0], 2);
+    race.go();
+    let bump: Extract<RaceEvent, { t: 'bump' }> | undefined;
+    for (let i = 0; i < 60 * 120 && !bump; i++) {
+      // Vai para a faixa do próximo obstáculo, de propósito.
+      const o = race.obstacles.find((x) => !x.hit && x.z > race.dist);
+      const g = race.gates.find((x) => x.state === 'open');
+      const target = o ? o.lane : g ? g.correct : race.lane;
+      if (race.lane !== target) race.steer(target > race.lane ? 1 : -1);
+      race.step(DT);
+      for (const ev of race.events.splice(0)) if (ev.t === 'bump') bump = ev;
+    }
+    expect(bump).toBeDefined();
+    expect(bump!.smash).toBe(false);
+    expect(Math.abs(race.x - laneX(bump!.obstacle.lane))).toBeLessThan(HIT_RANGE);
+    expect(race.speed).toBeLessThan(SPEED * 0.5);
+    expect(race.wobbleT).toBeGreaterThan(0);
+    for (let i = 0; i < 120; i++) race.step(DT);
+    expect(race.speed).toBeGreaterThan(SPEED * 0.8);
+  });
+
+  it('com turbo, o carro derruba o obstáculo sem frear', () => {
+    const race = new Race(WORDS[0], 6);
+    race.go();
+    let bump: Extract<RaceEvent, { t: 'bump' }> | undefined;
+    for (let i = 0; i < 60 * 200 && !bump; i++) {
+      const o = race.obstacles.find((x) => !x.hit && x.z > race.dist);
+      if (o && race.lane !== o.lane) race.steer(o.lane > race.lane ? 1 : -1);
+      if (o && o.z - race.dist < 12) race.charge = 3;
+      if (o && o.z - race.dist < 10 && race.turboT === 0) race.turbo();
+      race.step(DT);
+      for (const ev of race.events.splice(0)) if (ev.t === 'bump') bump = ev;
+    }
+    expect(bump?.smash).toBe(true);
+    expect(race.bumps).toBe(0);
+  });
+
+  it('dá para desligar', () => {
+    const race = new Race(WORDS[0], 1, false);
+    const events = run(race, perfect);
+    expect(events.some((e) => e.t === 'obstacle')).toBe(false);
+    expect(race.phase).toBe('done');
   });
 });
 

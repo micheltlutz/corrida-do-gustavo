@@ -13,10 +13,12 @@ interface SaveData {
   sticker: StickerId | null;
   sound: boolean;
   music: boolean;
+  /** Obstáculos na pista (dá para desligar na tela inicial). */
+  obstacles: boolean;
 }
 
 function read(): SaveData {
-  const empty: SaveData = { trophies: {}, sticker: null, sound: true, music: true };
+  const empty: SaveData = { trophies: {}, sticker: null, sound: true, music: true, obstacles: true };
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return empty;
@@ -26,6 +28,7 @@ function read(): SaveData {
       sticker: STICKER_IDS.includes(d.sticker as StickerId) ? (d.sticker as StickerId) : null,
       sound: d.sound !== false,
       music: d.music !== false,
+      obstacles: d.obstacles !== false,
     };
   } catch {
     return empty;
@@ -60,6 +63,13 @@ export const store = {
   },
   set sound(on: boolean) {
     state.sound = on;
+    write();
+  },
+  get obstacles(): boolean {
+    return state.obstacles;
+  },
+  set obstacles(on: boolean) {
+    state.obstacles = on;
     write();
   },
   get music(): boolean {

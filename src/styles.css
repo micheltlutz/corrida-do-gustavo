@@ -112,6 +112,10 @@ body {
   --icon: #90a4ae;
 }
 
+.btn.cone-on {
+  --icon: #ff7043;
+}
+
 .btn.back-to-games {
   --size: clamp(56px, 9vmin, 76px);
   position: absolute;

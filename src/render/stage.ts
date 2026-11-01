@@ -3,19 +3,21 @@
 
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { LANE_W, laneX, type Gate, type Race, type Star, type Zone } from '../game/race.ts';
+import { LANE_W, laneX, type Gate, type Obstacle, type Race, type Star, type Zone } from '../game/race.ts';
 import { ARCH_COLORS } from './art.ts';
 import { bend, bendPoint, bent, lambert } from './bend.ts';
 import { Car } from './car.ts';
 import { Particles } from './particles.ts';
 import { grandstand, Scenery } from './scenery.ts';
-import { checkerTexture, CURB, grassTexture, mudTexture, pitBoard, ROAD_HALF, ROAD_TILE, roadTexture, signTexture } from './textures.ts';
+import { checkerTexture, crateTexture, CURB, grassTexture, mudTexture, pitBoard, ROAD_HALF, ROAD_TILE, roadTexture, signTexture } from './textures.ts';
 
 const AHEAD = 230;
 const BACK = 20;
 const SIGN = 2.0;
 const SIGN_Y = 2.05;
 const ARCH_H = 3.5;
+/** Obstáculos maiores que os cones da beira da pista (para não confundir). */
+const OBSTACLE_SCALE = 1.4;
 
 interface GateView {
   g: THREE.Group;
@@ -24,6 +26,13 @@ interface GateView {
   arrow: THREE.Mesh | null;
   /** Animações das placas: tempo desde o evento. */
   anim: { lane: number; kind: 'pop' | 'shake' | 'fly'; t: number; from?: THREE.Vector3; done?: (x: number, y: number) => void }[];
+}
+
+interface ObstacleView {
+  g: THREE.Group;
+  /** Tempo desde que apareceu (cresce com um pulinho). */
+  age: number;
+  fly: { t: number; vel: THREE.Vector3; spin: THREE.Vector3 } | null;
 }
 
 interface StarView {
@@ -73,6 +82,15 @@ export class Stage {
   private readonly gates = new Map<number, GateView>();
   private readonly stars = new Map<number, StarView>();
   private readonly zones = new Map<number, THREE.Object3D>();
+  private readonly obstacles = new Map<number, ObstacleView>();
+  private readonly obstacleMats = {
+    orange: lambert('#FF7043'),
+    white: lambert('#FFFFFF'),
+    red: lambert('#E53935'),
+    dark: lambert('#37474F'),
+    crate: lambert('#ffffff', { map: crateTexture() }),
+    shadow: bent(new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0.22, depthWrite: false })),
+  };
   private readonly startLine: THREE.Group;
   private readonly signMats = new Map<string, THREE.MeshBasicMaterial>();
   private readonly archMats = new Map<string, THREE.MeshLambertMaterial>();
@@ -82,6 +100,12 @@ export class Stage {
     sign: new THREE.PlaneGeometry(SIGN, SIGN),
     glow: new THREE.PlaneGeometry(SIGN * 1.9, SIGN * 1.9),
     arrow: new THREE.ConeGeometry(0.4, 0.8, 4),
+    cone: new THREE.ConeGeometry(0.46, 1.35, 18),
+    coneBand: new THREE.CylinderGeometry(0.28, 0.33, 0.16, 18),
+    coneBase: new RoundedBoxGeometry(1.0, 0.14, 1.0, 2, 0.05),
+    tire: new THREE.TorusGeometry(0.5, 0.22, 10, 22),
+    crate: new RoundedBoxGeometry(1.15, 1.15, 1.15, 2, 0.06),
+    blob: new THREE.CircleGeometry(0.75, 20),
     star: new THREE.ExtrudeGeometry(starShape(0.55), { depth: 0.16, bevelEnabled: true, bevelSize: 0.06, bevelThickness: 0.06, bevelSegments: 1 }),
   };
   private readonly glowMat = new THREE.MeshBasicMaterial({
@@ -293,6 +317,55 @@ export class Stage {
     return g;
   }
 
+  private makeObstacle(o: Obstacle): ObstacleView {
+    const g = new THREE.Group();
+    const m = this.obstacleMats;
+    const add = (geo: THREE.BufferGeometry, mat: THREE.Material, y: number, rx = 0) => {
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.y = y;
+      mesh.rotation.x = rx;
+      g.add(mesh);
+      return mesh;
+    };
+    if (o.kind === 'cone') {
+      add(this.geo.coneBase, m.orange, 0.07);
+      add(this.geo.cone, m.orange, 0.8);
+      add(this.geo.coneBand, m.white, 0.95);
+    } else if (o.kind === 'tires') {
+      for (let i = 0; i < 3; i++) add(this.geo.tire, i === 1 ? m.red : m.dark, 0.22 + i * 0.4, Math.PI / 2);
+    } else {
+      const c = add(this.geo.crate, m.crate, 0.58);
+      c.rotation.y = 0.15;
+    }
+    const shadow = add(this.geo.blob, m.shadow, 0.02, -Math.PI / 2);
+    shadow.renderOrder = -1;
+    g.position.set(laneX(o.lane), 0, -o.z);
+    g.scale.setScalar(0.001);
+    this.scene.add(g);
+    return { g, age: 0, fly: null };
+  }
+
+  /** Bateu (ou o turbo derrubou): o obstáculo sai voando para o lado. */
+  obstacleHit(o: Obstacle, race: Race): void {
+    const v = this.obstacles.get(o.id);
+    if (!v || v.fly) return;
+    const away = Math.sign(laneX(o.lane) - race.x) || (Math.random() < 0.5 ? -1 : 1);
+    v.fly = {
+      t: 0,
+      vel: new THREE.Vector3(away * (o.smashed ? 7 : 4), o.smashed ? 8 : 5.5, -race.speed * 0.9 - 3),
+      spin: new THREE.Vector3((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 8, away * -8),
+    };
+    // A sombra fica no chão (some quando ele voa).
+    const shadow = v.g.children.at(-1);
+    if (shadow) shadow.visible = false;
+    const p = v.g.position.clone().setY(0.6);
+    if (o.smashed) {
+      this.fx.confetti(p, 26, 5);
+      this.fx.sparkle(p, '#FFEB3B', 14);
+    }
+    for (let i = 0; i < 6; i++) this.fx.puff(p, this.v.set((Math.random() - 0.5) * 3, 1 + Math.random(), (Math.random() - 0.5) * 2));
+  }
+
   private makeStar(s: Star): StarView {
     const m = new THREE.Mesh(this.geo.star, this.starMat);
     m.position.set(laneX(s.lane), 1.1, -s.z);
@@ -305,6 +378,8 @@ export class Stage {
     for (const v of this.gates.values()) this.scene.remove(v.g);
     for (const v of this.stars.values()) this.scene.remove(v.m);
     for (const v of this.zones.values()) this.scene.remove(v);
+    for (const v of this.obstacles.values()) this.scene.remove(v.g);
+    this.obstacles.clear();
     this.cheer.length = 0;
     this.gates.clear();
     this.stars.clear();
@@ -408,6 +483,17 @@ export class Stage {
       }
     }
     seen.clear();
+    for (const o of race.obstacles) {
+      seen.add(o.id);
+      if (!this.obstacles.has(o.id)) this.obstacles.set(o.id, this.makeObstacle(o));
+    }
+    for (const [id, v] of this.obstacles) {
+      if (!seen.has(id)) {
+        this.scene.remove(v.g);
+        this.obstacles.delete(id);
+      }
+    }
+    seen.clear();
     for (const z of race.zones) {
       seen.add(z.id);
       if (!this.zones.has(z.id)) this.zones.set(z.id, this.makeZone(z));
@@ -459,6 +545,29 @@ export class Stage {
           }
         }
       }
+    }
+    for (const v of this.obstacles.values()) {
+      v.age += dt;
+      if (!v.fly) {
+        // Aparece com um pulinho (cresce passando um pouco do tamanho).
+        const k = Math.min(1, v.age / 0.45);
+        const sc = k < 1 ? 1 + Math.sin(k * Math.PI) * 0.35 - (1 - k) * (1 - k) : 1;
+        v.g.scale.setScalar(Math.max(0.001, sc) * OBSTACLE_SCALE);
+        continue;
+      }
+      const f = v.fly;
+      f.t += dt;
+      f.vel.y -= 18 * dt;
+      v.g.position.addScaledVector(f.vel, dt);
+      if (v.g.position.y < 0) {
+        v.g.position.y = 0;
+        f.vel.y = Math.abs(f.vel.y) * 0.35;
+        f.vel.x *= 0.6;
+      }
+      v.g.rotation.x += f.spin.x * dt;
+      v.g.rotation.y += f.spin.y * dt;
+      v.g.rotation.z += f.spin.z * dt;
+      if (f.t > 1.4) v.g.visible = false;
     }
     for (const s of this.stars.values()) {
       s.m.rotation.y = this.t * 3;

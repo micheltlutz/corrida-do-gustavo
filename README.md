@@ -29,6 +29,12 @@ Funciona deitado e em pé.
   - **Letra errada:** o carro balança os pneus, a voz diz "Ops! Essa é a letra bê, vamos procurar a letra gê!" e os portões voltam logo à frente.
   - **Sem frustração:** depois de um erro, a letra certa brilha e ganha uma seta; depois do segundo, ela aparece nas 3 faixas.
   - As letras de distração nunca são parecidas com a certa (nada de G com C ou O).
+- **Obstáculos para desviar:** cones, pilhas de pneus e caixotes aparecem na pista (com um pulinho) a partir da 2ª letra.
+  - Bater não tem castigo: o carro balança, freia um pouquinho e o obstáculo sai voando. A voz diz "Opa! Bateu no cone!".
+  - Nunca fecham as 3 faixas, e sempre dá tempo de voltar para a faixa da letra.
+  - Nas primeiras vezes, a mãozinha mostra para que lado desviar.
+  - Com o turbo ligado, o carro derruba tudo sem frear.
+  - O botão do cone, na tela inicial, liga e desliga os obstáculos.
 - **Turbo (botão grande de fogo):** acelera e o **ímã** puxa a próxima letra certa direto para o carro. Começa cheio; depois enche pegando **3 estrelas** na pista.
 - **Pit Stop da Pipoca** (no meio da palavra): o carro passa numa poça de lama e entra na garagem.
   - **Pneus:** tocar nas rodas velhas para trocar por rodas novas.

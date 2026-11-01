@@ -57,6 +57,11 @@ export const ICONS = {
     `<path d="M18 34 V10 L38 6 V30" ${stroke(4)}/>` +
       `<ellipse cx="13" cy="35" rx="6" ry="5" fill="currentColor"/><ellipse cx="33" cy="31" rx="6" ry="5" fill="currentColor"/>`,
   ),
+  cone: svg(
+    `<path d="M19 8 H29 L37 38 H11 Z" fill="currentColor" ${solidEdge(3)}/>` +
+      `<path d="M16.5 20 H31.5 M14 29 H34" stroke="#fff" stroke-width="4"/>` +
+      `<rect x="6" y="37" width="36" height="6" rx="3" fill="currentColor"/>`,
+  ),
   flame: svg(
     `<path d="M24 45 C11 44 7 34 9 26 C11 18 17 15 17 7 C24 11 27 17 26 23 C29 21 31 18 31 14 C38 20 41 28 39 35 C37 41 32 45 24 45 Z" fill="currentColor"/>` +
       `<path d="M24 41 C18 41 15 36 16 32 C17 28 21 27 22 22 C26 26 30 29 30 34 C30 38 28 41 24 41 Z" fill="#FFCC80"/>`,

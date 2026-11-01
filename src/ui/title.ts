@@ -15,6 +15,7 @@ export class TitleScreen {
   private readonly car = h('div', 'car-side title-car');
   private readonly soundBtn: HTMLButtonElement;
   private readonly musicBtn: HTMLButtonElement;
+  private readonly obstaclesBtn: HTMLButtonElement;
 
   constructor(play: (wordIndex: number) => void) {
     const title = h('h1', 'title', '<span>Corrida do</span>Gustavo');
@@ -50,8 +51,12 @@ export class TitleScreen {
       store.music = !store.music;
       this.refresh();
     });
+    this.obstaclesBtn = onTap(iconButton('cone', 'Obstáculos', 'small'), () => {
+      store.obstacles = !store.obstacles;
+      this.refresh();
+    });
     const corner = h('div', 'corner');
-    corner.append(this.musicBtn, this.soundBtn);
+    corner.append(this.obstaclesBtn, this.musicBtn, this.soundBtn);
     const hero = h('div', 'hero');
     hero.append(title, road);
     this.el.append(hero, this.cards, corner);
@@ -67,6 +72,8 @@ export class TitleScreen {
     this.soundBtn.innerHTML = store.sound ? ICONS.soundOn : ICONS.soundOff;
     this.soundBtn.classList.toggle('off', !store.sound);
     this.musicBtn.classList.toggle('off', !store.music || !store.sound);
+    this.obstaclesBtn.classList.toggle('off', !store.obstacles);
+    this.obstaclesBtn.classList.toggle('cone-on', store.obstacles);
     // O adesivo escolhido no Pit Stop aparece no carro.
     this.car.querySelector('.sticker-on')?.remove();
     if (store.sticker) {

@@ -71,6 +71,22 @@ export const sfx = {
     osc.stop(t + 0.8);
     lfo.stop(t + 0.8);
   },
+  /** Bateu num obstáculo: "tum-bóin". */
+  bump(): void {
+    tone('sine', 190, 0, 0.22, 0.3, 70);
+    noiseBurst(0, 0.18, 0.2, 'lowpass', 900, 200);
+    tone('triangle', 520, 0.08, 0.35, 0.12, 260);
+  },
+  /** O turbo derrubou o obstáculo: "pá!" e brilho. */
+  smash(): void {
+    noiseBurst(0, 0.3, 0.3, 'bandpass', 2400, 600);
+    tone('square', 160, 0, 0.12, 0.1, 80);
+    chime([1318.51, 1760, 2093], 0.05, 0.18, 0.07, 'sine');
+  },
+  /** Obstáculo aparecendo na pista: "plop". */
+  plop(): void {
+    tone('sine', 300, 0, 0.12, 0.08, 620);
+  },
   mud(): void {
     noiseBurst(0, 0.3, 0.3, 'lowpass', 700, 150);
     noiseBurst(0.18, 0.3, 0.25, 'lowpass', 600, 120);

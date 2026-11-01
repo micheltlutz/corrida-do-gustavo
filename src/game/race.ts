@@ -24,6 +24,25 @@ export const FINISH_TIME = 4.5;
 
 export type Phase = 'ready' | 'drive' | 'pit' | 'finish' | 'done';
 
+/** Obstáculos: só atrapalham um pouquinho (o carro balança e freia). */
+export type ObstacleKind = 'cone' | 'tires' | 'crate';
+export const OBSTACLE_KINDS: readonly ObstacleKind[] = ['cone', 'tires', 'crate'];
+/** Distância (à frente do carro, quando a rodada começa) das fileiras de obstáculos. */
+export const OBSTACLE_ROWS = [48, 62];
+/** Bateu se o carro está a menos disto do meio da faixa do obstáculo. */
+export const HIT_RANGE = 1.0;
+export const BUMP_TIME = 0.8;
+
+export interface Obstacle {
+  id: number;
+  z: number;
+  lane: number;
+  kind: ObstacleKind;
+  hit: boolean;
+  /** Derrubado pelo turbo (sem frear). */
+  smashed: boolean;
+}
+
 export interface Gate {
   id: number;
   z: number;
@@ -63,6 +82,8 @@ export type RaceEvent =
   | { t: 'turboEmpty' }
   | { t: 'lane'; lane: number; dir: -1 | 1 }
   | { t: 'edge'; dir: -1 | 1 }
+  | { t: 'obstacle'; obstacle: Obstacle }
+  | { t: 'bump'; obstacle: Obstacle; smash: boolean }
   | { t: 'mud' }
   | { t: 'pit' }
   | { t: 'finish' }
@@ -93,6 +114,11 @@ export class Race {
   finishT = 0;
   time = 0;
   misses = 0;
+  bumps = 0;
+  /** Freada depois de bater num obstáculo. */
+  bumpT = 0;
+  readonly obstaclesOn: boolean;
+  readonly obstacles: Obstacle[] = [];
   readonly gates: Gate[] = [];
   readonly stars: Star[] = [];
   readonly zones: Zone[] = [];
@@ -105,8 +131,9 @@ export class Race {
   private pair: [string, string] | null = null;
   private pitDone = false;
 
-  constructor(word: Word, seed = Date.now()) {
+  constructor(word: Word, seed = Date.now(), obstacles = true) {
     this.word = word;
+    this.obstaclesOn = obstacles;
     this.rand = rng(seed);
     this.pitAfter = Math.ceil(word.letters.length / 2);
   }
@@ -169,7 +196,8 @@ export class Race {
       return;
     }
 
-    const want = this.turboT > 0 ? TURBO_SPEED : SPEED;
+    const want = this.turboT > 0 ? TURBO_SPEED : this.bumpT > 0 ? SPEED * 0.5 : SPEED;
+    this.bumpT = Math.max(0, this.bumpT - dt);
     this.speed += (want - this.speed) * Math.min(1, dt * (this.turboT > 0 ? 6 : 2));
     this.turboT = Math.max(0, this.turboT - dt);
     this.wobbleT = Math.max(0, this.wobbleT - dt);
@@ -209,6 +237,20 @@ export class Race {
           this.miss(g);
         }
       }
+    }
+    for (const o of this.obstacles) {
+      if (o.hit || o.z <= before || o.z > this.dist) continue;
+      if (Math.abs(this.x - laneX(o.lane)) >= HIT_RANGE) continue;
+      o.hit = true;
+      const smash = this.turboT > 0;
+      o.smashed = smash;
+      if (!smash) {
+        this.bumps++;
+        this.bumpT = BUMP_TIME;
+        this.wobbleT = Math.max(this.wobbleT, 0.7);
+        this.speed = Math.min(this.speed, SPEED * 0.35);
+      }
+      this.events.push({ t: 'bump', obstacle: o, smash });
     }
     for (const z of this.zones) {
       if (z.done || z.z > this.dist) continue;
@@ -265,7 +307,27 @@ export class Race {
         this.stars.push({ id: this.nextId++, z: this.dist + 28 + i * 6, lane, taken: false });
       }
     }
+    if (a === 0 && this.obstaclesOn && this.got >= 1) this.spawnObstacles();
     this.events.push({ t: 'gate', gate, letter });
+  }
+
+  /**
+   * Fileiras de obstáculos entre as estrelas e os portões. Começa com uma
+   * fileira de um obstáculo; da 4ª letra em diante, duas fileiras (às vezes
+   * com dois obstáculos). Sempre sobra pelo menos uma faixa livre.
+   */
+  private spawnObstacles(): void {
+    const rows = this.got >= 3 ? OBSTACLE_ROWS : [OBSTACLE_ROWS[0] + 6];
+    rows.forEach((dz, i) => {
+      const n = i === 1 && this.rand() < 0.4 ? 2 : 1;
+      const lanes = [0, 1, 2].sort(() => this.rand() - 0.5).slice(0, n);
+      const kind = OBSTACLE_KINDS[Math.floor(this.rand() * OBSTACLE_KINDS.length)];
+      for (const lane of lanes) {
+        const o: Obstacle = { id: this.nextId++, z: this.dist + dz, lane, kind, hit: false, smashed: false };
+        this.obstacles.push(o);
+        this.events.push({ t: 'obstacle', obstacle: o });
+      }
+    });
   }
 
   private collect(g: Gate, magnet: boolean): void {
@@ -295,7 +357,7 @@ export class Race {
   /** Tira o que já ficou bem para trás. */
   private prune(): void {
     const behind = this.dist - 30;
-    for (const list of [this.gates, this.stars, this.zones] as { z: number }[][]) {
+    for (const list of [this.gates, this.stars, this.zones, this.obstacles] as { z: number }[][]) {
       for (let i = list.length - 1; i >= 0; i--) if (list[i].z < behind) list.splice(i, 1);
     }
   }

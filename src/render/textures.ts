@@ -173,3 +173,38 @@ export function billboard(kind: number): THREE.CanvasTexture {
     c.fillText(marks[kind % 4], w / 2, h * 0.55);
   });
 }
+
+/** Caixote de madeira (tábuas e travessa em X). */
+export function crateTexture(): THREE.CanvasTexture {
+  const [cv, c] = canvas(128, 128);
+  c.fillStyle = '#C8A26B';
+  c.fillRect(0, 0, 128, 128);
+  c.strokeStyle = '#9C7643';
+  c.lineWidth = 3;
+  for (let y = 32; y < 128; y += 32) {
+    c.beginPath();
+    c.moveTo(0, y);
+    c.lineTo(128, y);
+    c.stroke();
+  }
+  c.strokeStyle = '#7A5530';
+  c.lineWidth = 14;
+  c.strokeRect(7, 7, 114, 114);
+  c.lineWidth = 12;
+  c.beginPath();
+  c.moveTo(12, 12);
+  c.lineTo(116, 116);
+  c.stroke();
+  c.fillStyle = '#5D4037';
+  for (const [x, y] of [
+    [14, 14],
+    [114, 14],
+    [14, 114],
+    [114, 114],
+  ]) {
+    c.beginPath();
+    c.arc(x, y, 4, 0, Math.PI * 2);
+    c.fill();
+  }
+  return texture(cv);
+}

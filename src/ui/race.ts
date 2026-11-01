@@ -4,7 +4,7 @@
 import { music } from '../audio/music.ts';
 import { engine, sfx } from '../audio/sfx.ts';
 import { voice } from '../audio/speech.ts';
-import { Race, TURBO_STARS, type RaceEvent } from '../game/race.ts';
+import { Race, TURBO_STARS, type ObstacleKind, type RaceEvent } from '../game/race.ts';
 import { letterName, letterRef, WORDS, type Word } from '../game/words.ts';
 import { letterColor } from '../render/art.ts';
 import { Stage } from '../render/stage.ts';
@@ -21,6 +21,13 @@ export interface RaceNav {
 
 const STEP = 1 / 60;
 const PRAISE = ['Muito bem!', 'Isso!', 'Boa!', 'Demais!', 'Mandou bem!'];
+
+/** Como a voz chama cada obstáculo. */
+const OBSTACLE_NAMES: Record<ObstacleKind, { warn: string; bump: string }> = {
+  cone: { warn: 'Cuidado com o cone! Desvie!', bump: 'Opa! Bateu no cone!' },
+  tires: { warn: 'Cuidado com os pneus! Desvie!', bump: 'Opa! Bateu nos pneus!' },
+  crate: { warn: 'Cuidado com a caixa! Desvie!', bump: 'Opa! Bateu na caixa!' },
+};
 
 function pick<T>(list: readonly T[]): T {
   return list[Math.floor(Math.random() * list.length)];
@@ -61,6 +68,12 @@ export class RaceScreen {
   private shownHand = false;
   private lastTurboHint = -99;
   private firstGate = true;
+  /** Já avisou dos obstáculos nesta corrida. */
+  private warned = false;
+  private lastBumpLine = -99;
+  /** Quantas vezes a mãozinha já mostrou como desviar (só nas primeiras). */
+  private dodgeHints = 0;
+  private dodgeFor = -1;
   private turboWasFull = true;
   private down: { id: number; x: number; y: number; t: number; fired: boolean } | null = null;
 
@@ -104,7 +117,9 @@ export class RaceScreen {
     }
     this.stage.reset();
     this.stage.car.setSticker(store.sticker);
-    this.race = new Race(this.word);
+    this.race = new Race(this.word, Date.now(), store.obstacles);
+    this.warned = false;
+    this.dodgeFor = -1;
     this.active = true;
     this.paused = false;
     this.acc = 0;
@@ -264,10 +279,24 @@ export class RaceScreen {
     this.turboBtn.classList.toggle('full', full);
     this.turboBtn.classList.toggle('on', race.turboT > 0 || race.magnet);
     [...this.pips.children].forEach((p, i) => p.classList.toggle('on', i < race.charge));
-    // Mãozinha mostrando para que lado deslizar (primeira rodada e depois de errar).
+    // Mãozinha mostrando para que lado deslizar: desviar (nas primeiras vezes),
+    // ou ir para a letra (primeira rodada e depois de errar).
     const g = race.gates.find((x) => x.state === 'open');
     let show = false;
-    if (g && race.phase === 'drive' && race.lane !== g.correct && !race.magnet) {
+    const block = race.phase === 'drive' ? race.obstacles.find((o) => !o.hit && o.lane === race.lane && o.z - race.dist > 6 && o.z - race.dist < 28) : undefined;
+    if (block && (this.dodgeFor === block.id || this.dodgeHints < 3)) {
+      if (this.dodgeFor !== block.id) {
+        this.dodgeFor = block.id;
+        this.dodgeHints++;
+      }
+      const row = race.obstacles.filter((o) => o.z === block.z).map((o) => o.lane);
+      const free = [0, 1, 2].filter((l) => !row.includes(l));
+      const best = free.sort((a, b) => Math.abs(a - race.lane) - Math.abs(b - race.lane) || (g ? Math.abs(a - g.correct) - Math.abs(b - g.correct) : 0))[0];
+      if (best !== undefined) {
+        show = true;
+        this.hand.dataset.dir = best < race.lane ? 'left' : 'right';
+      }
+    } else if (g && race.phase === 'drive' && race.lane !== g.correct && !race.magnet) {
       const near = g.z - race.dist < 70;
       const idle = race.time - Math.max(this.gateAt, this.steeredAt) > 1.2;
       show = near && idle && (g.hint || !this.shownHand);
@@ -333,6 +362,25 @@ export class RaceScreen {
         break;
       case 'edge':
         sfx.edge();
+        break;
+      case 'obstacle':
+        if (!this.warned) {
+          this.warned = true;
+          voice.queue(OBSTACLE_NAMES[ev.obstacle.kind].warn);
+        }
+        this.later(80, () => sfx.plop());
+        break;
+      case 'bump':
+        stage.obstacleHit(ev.obstacle, race);
+        if (ev.smash) {
+          sfx.smash();
+        } else {
+          sfx.bump();
+          if (race.time - this.lastBumpLine > 8) {
+            this.lastBumpLine = race.time;
+            voice.queue(OBSTACLE_NAMES[ev.obstacle.kind].bump);
+          }
+        }
         break;
       case 'mud':
         sfx.mud();
