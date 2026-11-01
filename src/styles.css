@@ -1,0 +1,1180 @@
+:root {
+  color-scheme: light;
+  --font: ui-rounded, 'SF Pro Rounded', 'Arial Rounded MT Bold', system-ui, -apple-system, sans-serif;
+  --ink: #263238;
+  --red: #e53935;
+  --blue: #1e88e5;
+  --yellow: #fdd835;
+  --pad-t: max(14px, env(safe-area-inset-top, 0px));
+  --pad-r: max(16px, env(safe-area-inset-right, 0px));
+  --pad-b: max(14px, env(safe-area-inset-bottom, 0px));
+  --pad-l: max(16px, env(safe-area-inset-left, 0px));
+}
+
+/* Nada rola, nada é selecionável, sem menus de toque longo. */
+html,
+body {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #4fc3f7;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  touch-action: none;
+}
+
+#app {
+  position: absolute;
+  inset: 0;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* ---------- botões ---------- */
+
+.btn {
+  --size: clamp(64px, 11vmin, 92px);
+  --face: #ffffff;
+  --edge: rgba(0, 0, 0, 0.2);
+  --icon: var(--red);
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  flex: none;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 30%;
+  background: var(--face);
+  color: var(--icon);
+  box-shadow: 0 6px 0 var(--edge), 0 10px 18px rgba(0, 0, 0, 0.15);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.btn:active {
+  transform: translateY(4px) scale(0.96);
+  box-shadow: 0 2px 0 var(--edge), 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn svg {
+  display: block;
+  width: 56%;
+  height: 56%;
+  pointer-events: none;
+}
+
+.btn.small {
+  --size: clamp(56px, 9vmin, 76px);
+}
+
+.btn.big {
+  --size: clamp(110px, 20vmin, 160px);
+  --face: #43a047;
+  --edge: #2e7d32;
+  --icon: #ffffff;
+  border-radius: 50%;
+  animation: breathe 1.4s ease-in-out infinite;
+}
+
+.btn.big:active {
+  animation: none;
+}
+
+.btn.off {
+  --icon: #90a4ae;
+}
+
+.btn.back-to-games {
+  --size: clamp(56px, 9vmin, 76px);
+  position: absolute;
+  top: var(--pad-t);
+  left: var(--pad-l);
+  z-index: 5;
+}
+
+@keyframes breathe {
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+/* ---------- tela inicial ---------- */
+
+.title-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  background: radial-gradient(ellipse 18% 7% at 18% 16%, rgba(255, 255, 255, 0.85) 0 60%, transparent 62%),
+    radial-gradient(ellipse 12% 5% at 26% 13%, rgba(255, 255, 255, 0.85) 0 60%, transparent 62%),
+    radial-gradient(ellipse 16% 6% at 82% 24%, rgba(255, 255, 255, 0.7) 0 60%, transparent 62%),
+    linear-gradient(180deg, #3fa9f5, #8fd3fa 45%, #cfeffd 62%, #8bc34a 62.2%, #7cb342);
+}
+
+.title {
+  margin: 0;
+  text-align: center;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: clamp(48px, 11vmin, 120px);
+  line-height: 0.95;
+  text-shadow: 0 5px 0 var(--red), 0 10px 22px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.01em;
+}
+
+.title span {
+  display: block;
+  font-size: 0.45em;
+  text-shadow: 0 4px 0 var(--blue), 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.road {
+  position: relative;
+  width: min(92vw, 120vmin);
+  display: flex;
+  justify-content: center;
+  padding-bottom: 2vmin;
+  background: linear-gradient(180deg, transparent 72%, #5e6b73 72%, #5e6b73 100%);
+  border-radius: 3vmin;
+}
+
+.road::after {
+  content: '';
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 9%;
+  height: 1.2vmin;
+  background: repeating-linear-gradient(90deg, #fff 0 6%, transparent 6% 12%);
+  border-radius: 1vmin;
+  animation: lines 0.5s linear infinite;
+}
+
+@keyframes lines {
+  to {
+    background-position: -12vmin 0;
+  }
+}
+
+.title-car {
+  width: min(64vw, 62vmin);
+  animation: bob 0.5s ease-in-out infinite alternate;
+  z-index: 1;
+}
+
+.title-car.honk {
+  animation: honk 0.4s ease-out;
+}
+
+@keyframes bob {
+  to {
+    transform: translateY(-1.2%);
+  }
+}
+
+@keyframes honk {
+  40% {
+    transform: scale(1.06) rotate(-2deg);
+  }
+}
+
+.words {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.4vmin;
+}
+
+.word-card {
+  appearance: none;
+  border: 0;
+  font: inherit;
+  position: relative;
+  padding: 2vmin 2.6vmin;
+  border-radius: 3.6vmin;
+  background: #ffffff;
+  box-shadow: 0 1vmin 0 rgba(0, 0, 0, 0.18), 0 1.6vmin 3vmin rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.08s ease;
+}
+
+.word-card:active {
+  transform: translateY(0.6vmin) scale(0.97);
+}
+
+.word-card .tiles {
+  display: flex;
+  gap: 0.8vmin;
+}
+
+.word-card b {
+  display: grid;
+  place-items: center;
+  width: clamp(40px, 7.4vmin, 74px);
+  height: clamp(44px, 8.2vmin, 82px);
+  border-radius: 1.6vmin;
+  background: var(--c);
+  color: #fff;
+  font-weight: 900;
+  font-size: clamp(28px, 5.6vmin, 56px);
+  box-shadow: inset 0 -0.6vmin 0 rgba(0, 0, 0, 0.18);
+}
+
+.word-card[data-word='gustavo'] {
+  background: #fff8e1;
+}
+
+.word-card .cup {
+  position: absolute;
+  top: -3vmin;
+  right: -2.4vmin;
+  width: clamp(40px, 8vmin, 72px);
+}
+
+.word-card .cup em {
+  position: absolute;
+  right: -0.6em;
+  bottom: -0.2em;
+  font-style: normal;
+  font-weight: 900;
+  font-size: clamp(16px, 3vmin, 26px);
+  color: #fff;
+  background: var(--red);
+  border-radius: 999px;
+  padding: 0 0.4em;
+  border: 3px solid #fff;
+}
+
+.corner {
+  position: absolute;
+  top: var(--pad-t);
+  right: var(--pad-r);
+  display: flex;
+  gap: 2vmin;
+}
+
+/* ---------- carro de lado (início e Pit Stop) ---------- */
+
+.car-side {
+  position: relative;
+  aspect-ratio: 600 / 280;
+}
+
+.car-side .car-body {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.car-side .wheel {
+  position: absolute;
+  aspect-ratio: 1;
+}
+
+.car-side .wheel svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wheel.spin svg {
+  animation: spin 0.45s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.car-side .sticker-on {
+  position: absolute;
+  aspect-ratio: 1;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
+}
+
+.car-side .sticker-on svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- corrida ---------- */
+
+.race {
+  background: #cfeffd;
+}
+
+.race .view,
+.race .stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.race .touch {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.race .home-btn {
+  position: absolute;
+  top: var(--pad-t);
+  left: var(--pad-l);
+  z-index: 4;
+}
+
+/* Painel com as letras da palavra. */
+.panel {
+  position: absolute;
+  top: var(--pad-t);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  gap: clamp(5px, 1vmin, 12px);
+  padding: clamp(7px, 1.3vmin, 14px);
+  border-radius: clamp(16px, 3vmin, 30px);
+  background: rgba(38, 50, 56, 0.85);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25), inset 0 0 0 3px rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+  transition: background 0.4s ease;
+}
+
+.slot {
+  --s: clamp(46px, min(9vmin, 10vw), 84px);
+  width: var(--s);
+  height: calc(var(--s) * 1.12);
+  border-radius: calc(var(--s) * 0.22);
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: 3px dashed rgba(255, 255, 255, 0.35);
+  font-weight: 900;
+  font-size: calc(var(--s) * 0.7);
+  color: rgba(255, 255, 255, 0.25);
+  transition: background 0.2s ease;
+}
+
+.slot.now {
+  border: 4px solid #ffeb3b;
+  color: rgba(255, 255, 255, 0.7);
+  animation: now 0.9s ease-in-out infinite;
+}
+
+@keyframes now {
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 18px #ffeb3b;
+  }
+}
+
+.slot.got {
+  border: 0;
+  background: #fff;
+  color: var(--c);
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.12);
+  animation: got 0.4s ease-out;
+}
+
+@keyframes got {
+  40% {
+    transform: scale(1.35);
+  }
+}
+
+.panel.gold {
+  background: linear-gradient(180deg, #ffd54f, #ffa000);
+  box-shadow: 0 6px 0 #e65100, 0 0 40px rgba(255, 213, 79, 0.9);
+  animation: gold 0.5s ease-in-out 6 alternate;
+}
+
+@keyframes gold {
+  to {
+    filter: brightness(1.25);
+  }
+}
+
+.panel.gold .slot.got {
+  background: #fff8e1;
+}
+
+.slot.say {
+  animation: say 0.7s ease-out;
+}
+
+@keyframes say {
+  30% {
+    transform: scale(1.5) translateY(18%);
+    background: #fff;
+    box-shadow: 0 0 24px #fff;
+  }
+}
+
+.panel.shine .slot {
+  animation: shine 0.6s ease-in-out infinite alternate;
+}
+
+.panel.shine .slot:nth-child(2n) {
+  animation-delay: 0.2s;
+}
+
+@keyframes shine {
+  to {
+    transform: translateY(-12%) scale(1.1);
+  }
+}
+
+/* Letra voando para o painel. */
+.fly-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.fly {
+  position: fixed;
+  width: 90px;
+  height: 90px;
+  margin: 0;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 6px solid var(--c);
+  color: var(--c);
+  font-weight: 900;
+  font-size: 62px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
+}
+
+/* Botão do turbo com as 3 estrelas. */
+.turbo {
+  --size: clamp(120px, 22vmin, 190px);
+  appearance: none;
+  border: 0;
+  padding: 0;
+  position: absolute;
+  right: calc(var(--pad-r) + 1vmin);
+  bottom: calc(var(--pad-b) + 2vmin);
+  z-index: 4;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #b0bec5, #78909c);
+  color: #eceff1;
+  box-shadow: 0 8px 0 #546e7a, 0 12px 24px rgba(0, 0, 0, 0.25);
+  display: grid;
+  place-items: center;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.turbo > svg {
+  width: 52%;
+  height: 52%;
+}
+
+.turbo.full {
+  background: radial-gradient(circle at 50% 35%, #ffb74d, #f4511e);
+  color: #fff;
+  box-shadow: 0 8px 0 #bf360c, 0 0 0 6px rgba(255, 235, 59, 0.6), 0 12px 30px rgba(244, 81, 30, 0.6);
+  animation: breathe 0.9s ease-in-out infinite;
+}
+
+.turbo.on {
+  background: radial-gradient(circle at 50% 35%, #fff176, #ffb300);
+  animation: none;
+  transform: scale(0.94);
+}
+
+.turbo:active {
+  transform: translateY(5px) scale(0.95);
+}
+
+.turbo.nope {
+  animation: nope 0.4s ease;
+}
+
+@keyframes nope {
+  25% {
+    transform: translateX(-6%);
+  }
+  75% {
+    transform: translateX(6%);
+  }
+}
+
+.pips {
+  position: absolute;
+  left: 50%;
+  bottom: -6%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4%;
+  width: 80%;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pips i {
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #546e7a;
+  color: #78909c;
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff;
+}
+
+.pips i svg {
+  width: 72%;
+  height: 72%;
+}
+
+.pips i.on {
+  background: #ffca28;
+  color: #fff;
+  animation: got 0.3s ease-out;
+}
+
+/* Semáforo da largada. */
+.lights {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: flex;
+  gap: 2.4vmin;
+  padding: 2.4vmin 3vmin;
+  border-radius: 4vmin;
+  background: #263238;
+  box-shadow: 0 1vmin 0 #111, 0 2vmin 4vmin rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.lights i {
+  width: 11vmin;
+  height: 11vmin;
+  border-radius: 50%;
+  background: #455a64;
+  box-shadow: inset 0 -0.8vmin 0 rgba(0, 0, 0, 0.3);
+}
+
+.lights[data-on='1'] i:nth-child(1),
+.lights[data-on='2'] i:nth-child(-n + 2) {
+  background: #ff1744;
+  box-shadow: 0 0 3vmin #ff1744;
+}
+
+.lights[data-on='3'] i {
+  background: #00e676;
+  box-shadow: 0 0 3vmin #00e676;
+}
+
+/* Mãozinha mostrando o gesto. */
+.hand {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  z-index: 5;
+  font-size: clamp(64px, 13vmin, 120px);
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
+}
+
+.hand[data-dir='right'] {
+  animation: swipe-right 1.1s ease-in-out infinite;
+}
+
+.hand[data-dir='left'] {
+  animation: swipe-left 1.1s ease-in-out infinite;
+}
+
+@keyframes swipe-right {
+  0% {
+    transform: translateX(-90%) rotate(-10deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    transform: translateX(60%) rotate(10deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(60%) rotate(10deg);
+    opacity: 0;
+  }
+}
+
+@keyframes swipe-left {
+  0% {
+    transform: translateX(-10%) rotate(10deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    transform: translateX(-160%) rotate(-10deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-160%) rotate(-10deg);
+    opacity: 0;
+  }
+}
+
+.fade {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: #fff;
+  animation: fade-in 0.4s ease forwards;
+  pointer-events: none;
+}
+
+.fade.out {
+  animation: fade-out 0.4s ease forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Janelas por cima (sair da corrida, troféu). */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  place-items: center;
+  background: rgba(38, 50, 56, 0.45);
+  animation: fade-in 0.25s ease;
+}
+
+.overlay .card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3vmin;
+  padding: 4vmin 5vmin;
+  border-radius: 5vmin;
+  background: #fff;
+  box-shadow: 0 1.4vmin 0 rgba(0, 0, 0, 0.15), 0 3vmin 6vmin rgba(0, 0, 0, 0.25);
+  animation: pop-in 0.35s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+
+@keyframes pop-in {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+
+.confirm .card {
+  flex-direction: row;
+  gap: 6vmin;
+}
+
+.btn.stay {
+  --face: #eceff1;
+  --edge: #b0bec5;
+  --icon: #546e7a;
+  animation: none;
+}
+
+.btn.leave {
+  --face: var(--red);
+  --edge: #b71c1c;
+  animation: none;
+}
+
+.trophy .cup {
+  width: clamp(120px, 26vmin, 230px);
+  animation: cup 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes cup {
+  to {
+    transform: rotate(6deg) scale(1.05);
+  }
+}
+
+.trophy .word {
+  display: flex;
+  gap: 1vmin;
+}
+
+.trophy .word span {
+  display: grid;
+  place-items: center;
+  width: clamp(44px, 8.5vmin, 80px);
+  height: clamp(50px, 9.5vmin, 90px);
+  border-radius: 1.8vmin;
+  background: linear-gradient(180deg, #ffd54f, #ffa000);
+  color: #fff;
+  font-weight: 900;
+  font-size: clamp(30px, 6.4vmin, 60px);
+  text-shadow: 0 3px 0 #e65100;
+  box-shadow: inset 0 -0.6vmin 0 rgba(0, 0, 0, 0.15);
+}
+
+.trophy .buttons {
+  display: flex;
+  align-items: center;
+  gap: 4vmin;
+}
+
+/* ---------- Pit Stop ---------- */
+
+.pit {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  background: #cfd8dc;
+  touch-action: none;
+}
+
+.pit .wall {
+  position: absolute;
+  inset: 0 0 34% 0;
+  background: repeating-linear-gradient(180deg, #b0bec5 0 9vmin, #a7b6bd 9vmin 9.4vmin), #b0bec5;
+}
+
+.pit .bunting {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 9vmin;
+}
+
+.pit .tools {
+  position: absolute;
+  left: 4%;
+  top: 16%;
+  width: clamp(120px, 24vmin, 220px);
+}
+
+.pit .tires {
+  position: absolute;
+  right: 2%;
+  bottom: 2%;
+  width: clamp(60px, 11vmin, 110px);
+}
+
+.pit .window {
+  position: absolute;
+  top: 16%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34vmin;
+  height: 22vmin;
+  border-radius: 2vmin;
+  background: radial-gradient(ellipse 30% 20% at 30% 40%, #fff 0 60%, transparent 62%), linear-gradient(180deg, #81d4fa, #e1f5fe);
+  box-shadow: inset 0 0 0 1.2vmin #eceff1, inset 0 0 0 1.6vmin #90a4ae;
+}
+
+.pit .floor {
+  position: absolute;
+  inset: 66% 0 0 0;
+  background: linear-gradient(180deg, #78909c, #607d8b);
+  border-top: 1.4vmin solid #ffca28;
+}
+
+.pit .steps {
+  position: absolute;
+  top: var(--pad-t);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2vmin;
+  z-index: 3;
+}
+
+.pit .steps div {
+  width: clamp(54px, 10vmin, 90px);
+  height: clamp(54px, 10vmin, 90px);
+  border-radius: 30%;
+  background: rgba(255, 255, 255, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 1.4vmin;
+  opacity: 0.6;
+  position: relative;
+}
+
+.pit .steps div svg {
+  width: 100%;
+  height: 100%;
+}
+
+.pit .steps .now {
+  background: #fff;
+  opacity: 1;
+  box-shadow: 0 0 0 4px #ffeb3b, 0 6px 0 rgba(0, 0, 0, 0.15);
+  animation: breathe 1.2s ease-in-out infinite;
+}
+
+.pit .steps .ok {
+  opacity: 1;
+  background: #a5d6a7;
+}
+
+.pit .steps .ok::after {
+  content: '✔';
+  position: absolute;
+  right: -10%;
+  bottom: -10%;
+  width: 45%;
+  height: 45%;
+  border-radius: 50%;
+  background: #43a047;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: clamp(14px, 2.6vmin, 24px);
+  font-weight: 900;
+}
+
+.pit .pipoca {
+  position: absolute;
+  left: max(var(--pad-l), 2vmin);
+  bottom: 30%;
+  width: clamp(110px, 22vmin, 210px);
+  z-index: 2;
+  transform-origin: 50% 100%;
+}
+
+.pit .pipoca.talk {
+  animation: talk 0.35s ease-in-out 6 alternate;
+}
+
+@keyframes talk {
+  to {
+    transform: rotate(-6deg) translateY(-4%);
+  }
+}
+
+.pit .car-side {
+  position: absolute;
+  left: 50%;
+  bottom: 20%;
+  width: min(76vw, 110vmin);
+  transform: translateX(-46%);
+  z-index: 2;
+}
+
+.pit .car-side.drive-off {
+  transition: transform 1s ease-in;
+  transform: translateX(120vw);
+}
+
+.car-side .shine-bar {
+  opacity: 0;
+}
+
+.car-side.shine .shine-bar {
+  animation: sweep 0.9s ease-out;
+}
+
+@keyframes sweep {
+  from {
+    opacity: 1;
+    transform: skewX(-20deg) translateX(0);
+  }
+  to {
+    opacity: 1;
+    transform: skewX(-20deg) translateX(900px);
+  }
+}
+
+.pit .mud {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pit .wheel.old {
+  cursor: pointer;
+  animation: wobble 0.6s ease-in-out infinite alternate;
+}
+
+.pit[data-step='tires'] .wheel.old::after {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  border: 5px solid #ffeb3b;
+  animation: ring 1s ease-out infinite;
+}
+
+@keyframes ring {
+  from {
+    transform: scale(0.85);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+@keyframes wobble {
+  to {
+    transform: rotate(8deg) translateY(2%);
+  }
+}
+
+.pit .wheel.off {
+  animation: wheel-off 0.65s ease-in forwards;
+}
+
+@keyframes wheel-off {
+  30% {
+    transform: translateY(-30%) rotate(-60deg);
+  }
+  to {
+    transform: translate(-260%, 140%) rotate(-400deg);
+    opacity: 0;
+  }
+}
+
+.pit .wheel.roll-in {
+  animation: roll-in 0.7s cubic-bezier(0.2, 0.8, 0.3, 1.1);
+}
+
+@keyframes roll-in {
+  from {
+    transform: translateX(500%) rotate(720deg);
+  }
+}
+
+.pit .wheel.new {
+  animation: got 0.4s ease-out;
+}
+
+.pit .wheel.new.spin {
+  animation: none;
+}
+
+.pit .sponge {
+  position: absolute;
+  left: 82%;
+  top: 80%;
+  width: clamp(90px, 16vmin, 150px);
+  transform: translate(-50%, -50%) rotate(-12deg);
+  z-index: 4;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.25));
+  animation: breathe 1.2s ease-in-out infinite;
+}
+
+.pit .sponge.held {
+  animation: scrub 0.18s ease-in-out infinite alternate;
+}
+
+@keyframes scrub {
+  to {
+    transform: translate(-50%, -50%) rotate(8deg);
+  }
+}
+
+.pit .bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff, rgba(179, 229, 252, 0.6) 40%, rgba(255, 255, 255, 0.2));
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.pit .tray {
+  position: absolute;
+  left: 50%;
+  bottom: var(--pad-b);
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  gap: 2vmin;
+  padding: 1.6vmin 2.4vmin;
+  border-radius: 3vmin;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1vmin 0 rgba(0, 0, 0, 0.15);
+}
+
+.pit .st,
+.st.dragging {
+  width: clamp(64px, 12vmin, 110px);
+  height: clamp(64px, 12vmin, 110px);
+  cursor: grab;
+  animation: breathe 1.4s ease-in-out infinite;
+}
+
+.pit .st:nth-child(2n) {
+  animation-delay: 0.3s;
+}
+
+.st svg {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.st.dragging {
+  position: fixed;
+  z-index: 50;
+  transform: translate(-50%, -50%) scale(1.15);
+  animation: none;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.3));
+}
+
+.pit .ghost {
+  position: absolute;
+  z-index: 6;
+  font-size: clamp(60px, 11vmin, 100px);
+  line-height: 1;
+  pointer-events: none;
+  transform: translate(-30%, -10%);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
+}
+
+.pit .ghost[data-kind='tap'] {
+  animation: tap 0.9s ease-in-out infinite;
+}
+
+.pit .ghost[data-kind='scrub'] {
+  animation: rub 1s ease-in-out infinite alternate;
+}
+
+@keyframes tap {
+  50% {
+    transform: translate(-30%, 10%) scale(0.9);
+  }
+}
+
+@keyframes rub {
+  from {
+    transform: translate(-130%, -10%);
+  }
+  to {
+    transform: translate(70%, -10%);
+  }
+}
+
+/* ---------- confete ---------- */
+
+.confetti-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti {
+  position: absolute;
+  top: -40px;
+  border-radius: 2px;
+}
+
+/* ---------- em pé ---------- */
+
+@media (orientation: portrait) {
+  .title-car {
+    width: 80vw;
+  }
+
+  .words {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pit .car-side {
+    width: 92vw;
+    transform: translateX(-50%);
+    bottom: 30%;
+  }
+
+  .pit .pipoca {
+    bottom: auto;
+    top: 24%;
+    left: 8%;
+  }
+
+  .pit .tools {
+    left: auto;
+    right: 6%;
+    top: 22%;
+  }
+
+  .pit .floor {
+    inset: 60% 0 0 0;
+  }
+
+  .pit .wall {
+    inset: 0 0 40% 0;
+  }
+
+  .slot {
+    --s: clamp(40px, 11vw, 84px);
+  }
+
+  .panel {
+    top: calc(var(--pad-t) + 72px);
+  }
+}
