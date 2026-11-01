@@ -198,15 +198,26 @@ describe('letras de distração', () => {
 
 describe('voz', () => {
   it('toda letra das palavras e das distrações tem nome para a voz', () => {
-    for (const l of [...'ABCDEFGHIJLMNOPRSTUVXZ', ...WORDS.flatMap((w) => w.letters)]) {
+    for (const l of [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', ...WORDS.flatMap((w) => w.letters)]) {
       expect(letterName(l)).not.toBe(l);
     }
     expect(letterRef('G')).toBe('a letra gê');
     expect(letterRef('Ã')).toBe('o á com til');
   });
 
-  it('a voz fala as palavras em minúsculas (em maiúsculas ela soletraria)', () => {
-    for (const w of WORDS) expect(w.spoken).toBe(w.spoken.toLowerCase().replace(/^g/, 'G'));
+  it('a voz fala as palavras sem tudo em maiúsculas (em maiúsculas ela soletraria)', () => {
+    for (const w of WORDS) expect(w.spoken.slice(1)).toBe(w.spoken.slice(1).toLowerCase());
     expect(WORDS[0].intro).toBe('Vamos montar o nome Gustavo!');
+    expect(WORDS[1].intro).toBe('Vamos montar a palavra mamãe!');
+    expect(WORDS.find((w) => w.id === 'rosane')!.end).toBe('Parabéns, campeão! Você montou o nome Rosane!');
+  });
+
+  it('são 14 palavras, sem repetir, e GUSTAVO é a primeira', () => {
+    expect(WORDS.map((w) => w.text)).toEqual([
+      'GUSTAVO', 'MAMÃE', 'PAPAI', 'ERON', 'ROSANE', 'SANDRA', 'LARRY', 'ROSINHA', 'SUELI', 'NELSON', 'KAREN', 'MICHEL', 'SIMBA', 'SNOW',
+    ]);
+    expect(new Set(WORDS.map((w) => w.id)).size).toBe(WORDS.length);
+    // Todas cabem no painel (no máximo 7 letras).
+    for (const w of WORDS) expect(w.letters.length).toBeLessThanOrEqual(7);
   });
 });

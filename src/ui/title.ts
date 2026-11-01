@@ -52,7 +52,9 @@ export class TitleScreen {
     });
     const corner = h('div', 'corner');
     corner.append(this.musicBtn, this.soundBtn);
-    this.el.append(title, road, this.cards, corner);
+    const hero = h('div', 'hero');
+    hero.append(title, road);
+    this.el.append(hero, this.cards, corner);
     backToGames(this.el);
   }
 

@@ -11,21 +11,38 @@ export interface Word {
   end: string;
 }
 
-function word(id: string, text: string, spoken: string, end: string): Word {
+function word(id: string, text: string, spoken: string, kind: 'nome' | 'palavra', end?: string): Word {
   return {
     id,
     text,
     letters: [...text.normalize('NFC')],
     spoken,
-    intro: `Vamos montar ${id === 'gustavo' ? 'o nome' : 'a palavra'} ${spoken}!`,
-    end,
+    intro: `Vamos montar ${kind === 'nome' ? 'o nome' : 'a palavra'} ${spoken}!`,
+    end: end ?? `Parabéns, campeão! Você montou ${kind === 'nome' ? 'o nome' : 'a palavra'} ${spoken}!`,
   };
 }
 
+/** Nomes da família e dos bichinhos (como a voz fala). */
+const FAMILY: [string, string][] = [
+  ['ERON', 'Eron'],
+  ['ROSANE', 'Rosane'],
+  ['SANDRA', 'Sandra'],
+  ['LARRY', 'Larry'],
+  ['ROSINHA', 'Rosinha'],
+  ['SUELI', 'Sueli'],
+  ['NELSON', 'Nelson'],
+  ['KAREN', 'Karen'],
+  ['MICHEL', 'Michel'],
+  ['SIMBA', 'Simba'],
+  // Escrito do jeito que se fala, senão a voz lê "isnóv".
+  ['SNOW', 'Snou'],
+];
+
 export const WORDS: readonly Word[] = [
-  word('gustavo', 'GUSTAVO', 'Gustavo', 'Parabéns, campeão Gustavo! Você montou seu nome!'),
-  word('mamae', 'MAMÃE', 'mamãe', 'Parabéns, campeão! Você montou mamãe!'),
-  word('papai', 'PAPAI', 'papai', 'Parabéns, campeão! Você montou papai!'),
+  word('gustavo', 'GUSTAVO', 'Gustavo', 'nome', 'Parabéns, campeão Gustavo! Você montou seu nome!'),
+  word('mamae', 'MAMÃE', 'mamãe', 'palavra', 'Parabéns, campeão! Você montou mamãe!'),
+  word('papai', 'PAPAI', 'papai', 'palavra', 'Parabéns, campeão! Você montou papai!'),
+  ...FAMILY.map(([text, spoken]) => word(text.toLowerCase(), text, spoken, 'nome')),
 ];
 
 /** Nome da letra para a voz (a voz lê melhor "gê" do que "G"). */

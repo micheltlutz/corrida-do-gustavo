@@ -130,9 +130,9 @@ body {
 
 .title-screen {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
+  gap: 3vmin;
   padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
   background: radial-gradient(ellipse 18% 7% at 18% 16%, rgba(255, 255, 255, 0.85) 0 60%, transparent 62%),
     radial-gradient(ellipse 12% 5% at 26% 13%, rgba(255, 255, 255, 0.85) 0 60%, transparent 62%),
@@ -140,12 +140,22 @@ body {
     linear-gradient(180deg, #3fa9f5, #8fd3fa 45%, #cfeffd 62%, #8bc34a 62.2%, #7cb342);
 }
 
+/* Deitado: título e carro à esquerda, palavras à direita. */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4vmin;
+  flex: 0 1 38%;
+  min-width: 0;
+}
+
 .title {
   margin: 0;
   text-align: center;
   color: #ffffff;
   font-weight: 900;
-  font-size: clamp(48px, 11vmin, 120px);
+  font-size: clamp(44px, 9.5vmin, 110px);
   line-height: 0.95;
   text-shadow: 0 5px 0 var(--red), 0 10px 22px rgba(0, 0, 0, 0.2);
   letter-spacing: 0.01em;
@@ -159,7 +169,7 @@ body {
 
 .road {
   position: relative;
-  width: min(92vw, 120vmin);
+  width: 100%;
   display: flex;
   justify-content: center;
   padding-bottom: 2vmin;
@@ -186,7 +196,7 @@ body {
 }
 
 .title-car {
-  width: min(64vw, 62vmin);
+  width: 88%;
   animation: bob 0.5s ease-in-out infinite alternate;
   z-index: 1;
 }
@@ -207,11 +217,13 @@ body {
   }
 }
 
+/* 14 palavras em 2 colunas, todas na tela (sem rolar). */
 .words {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2.4vmin;
+  --t: min(5.2vmin, 3.5vw);
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: calc(var(--t) * 0.3) calc(var(--t) * 0.5);
+  align-content: center;
 }
 
 .word-card {
@@ -219,10 +231,12 @@ body {
   border: 0;
   font: inherit;
   position: relative;
-  padding: 2vmin 2.6vmin;
-  border-radius: 3.6vmin;
+  display: flex;
+  justify-content: center;
+  padding: calc(var(--t) * 0.22) calc(var(--t) * 0.3);
+  border-radius: calc(var(--t) * 0.45);
   background: #ffffff;
-  box-shadow: 0 1vmin 0 rgba(0, 0, 0, 0.18), 0 1.6vmin 3vmin rgba(0, 0, 0, 0.15);
+  box-shadow: 0 calc(var(--t) * 0.12) 0 rgba(0, 0, 0, 0.18), 0 calc(var(--t) * 0.2) calc(var(--t) * 0.4) rgba(0, 0, 0, 0.12);
   cursor: pointer;
   transition: transform 0.08s ease;
 }
@@ -233,31 +247,32 @@ body {
 
 .word-card .tiles {
   display: flex;
-  gap: 0.8vmin;
+  gap: calc(var(--t) * 0.1);
 }
 
 .word-card b {
   display: grid;
   place-items: center;
-  width: clamp(40px, 7.4vmin, 74px);
-  height: clamp(44px, 8.2vmin, 82px);
-  border-radius: 1.6vmin;
+  width: var(--t);
+  height: calc(var(--t) * 1.1);
+  border-radius: calc(var(--t) * 0.22);
   background: var(--c);
   color: #fff;
   font-weight: 900;
-  font-size: clamp(28px, 5.6vmin, 56px);
-  box-shadow: inset 0 -0.6vmin 0 rgba(0, 0, 0, 0.18);
+  font-size: calc(var(--t) * 0.74);
+  box-shadow: inset 0 calc(var(--t) * -0.08) 0 rgba(0, 0, 0, 0.18);
 }
 
 .word-card[data-word='gustavo'] {
   background: #fff8e1;
+  box-shadow: 0 0 0 calc(var(--t) * 0.08) #ffca28, 0 calc(var(--t) * 0.12) 0 rgba(0, 0, 0, 0.18);
 }
 
 .word-card .cup {
   position: absolute;
-  top: -3vmin;
-  right: -2.4vmin;
-  width: clamp(40px, 8vmin, 72px);
+  top: calc(var(--t) * -0.35);
+  right: calc(var(--t) * -0.35);
+  width: calc(var(--t) * 0.95);
 }
 
 .word-card .cup em {
@@ -266,12 +281,12 @@ body {
   bottom: -0.2em;
   font-style: normal;
   font-weight: 900;
-  font-size: clamp(16px, 3vmin, 26px);
+  font-size: calc(var(--t) * 0.36);
   color: #fff;
   background: var(--red);
   border-radius: 999px;
   padding: 0 0.4em;
-  border: 3px solid #fff;
+  border: 2px solid #fff;
 }
 
 .corner {
@@ -1135,13 +1150,18 @@ body {
 /* ---------- em pé ---------- */
 
 @media (orientation: portrait) {
-  .title-car {
-    width: 80vw;
+  .title-screen {
+    flex-direction: column;
+  }
+
+  .hero {
+    flex: none;
+    width: min(80vw, 70vh);
+    gap: 3vmin;
   }
 
   .words {
-    flex-direction: column;
-    align-items: center;
+    --t: min(5.4vmin, 5.2vw, 4vh);
   }
 
   .pit .car-side {

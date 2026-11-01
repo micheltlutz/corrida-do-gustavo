@@ -1,7 +1,9 @@
 # Corrida do Gustavo
 
 Corrida de carrinho em 3D para crianças pequenas, **sem propagandas, sem compras e sem coleta de dados**.
-O carro de corrida vermelho do Gustavo (com o **G** na porta) corre sozinho numa pista de 3 faixas. A cada rodada aparecem 3 portões com letras, e a criança troca de faixa para passar pela **letra certa** e montar o nome **GUSTAVO** (e também **MAMÃE** e **PAPAI**).
+O carro de corrida vermelho do Gustavo (com o **G** na porta) corre sozinho numa pista de 3 faixas. A cada rodada aparecem 3 portões com letras, e a criança troca de faixa para passar pela **letra certa** e montar o nome **GUSTAVO**.
+
+**Palavras (14):** GUSTAVO, MAMÃE, PAPAI, ERON, ROSANE, SANDRA, LARRY, ROSINHA, SUELI, NELSON, KAREN, MICHEL, SIMBA e SNOW. Para colocar mais, é só acrescentar em `src/game/words.ts` (até 7 letras).
 
 **Jogar:** https://micheltlutz.github.io/corrida-do-gustavo/
 
